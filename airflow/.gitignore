@@ -1,0 +1,6 @@
+.env 
+__pycache__
+*.hcl
+logs
+*.tfstate
+plugins
