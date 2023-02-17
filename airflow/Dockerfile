@@ -10,10 +10,8 @@ COPY requirements.txt .
 
 USER $AIRFLOW_UID
 RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir pandas sqlalchemy psycopg2-binary
 
 USER root
-
 
 # Ref: https://airflow.apache.org/docs/docker-stack/recipes.html
 
