@@ -11,8 +11,8 @@ from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQue
 
 from airflow.models import Variable
 
-BUCKET_NAME = Variable.get("GCP_GCS_BUCKET")
 
+BUCKET_NAME = Variable.get("GCP_GCS_BUCKET")
 
 file_url = 'https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-01.parquet'
 output_url = "/tmp/yellow_tripdata_2022-01.parquet"
@@ -38,8 +38,8 @@ local_dag = DAG(
 )
 
 with local_dag:
-    ingest_data_task = BashOperator(
-        task_id='ingest_data',
+    extract_data_task = BashOperator(
+        task_id='extract_data',
         bash_command=f'curl -o {output_url} {file_url}'
     )
 
@@ -49,20 +49,20 @@ with local_dag:
         op_kwargs={'output_url': output_url}
     )
 
-    create_empty_table_task = BigQueryCreateEmptyTableOperator(
+    create_table_task = BigQueryCreateEmptyTableOperator(
         gcp_conn_id='bigquery_connection',
-        task_id='create_empty_table',
+        task_id='create_table',
         dataset_id='training_dataset',
         table_id='yellow_tripdata_2022_01'
     )
 
-    upload_to_bigquery_task = GCSToBigQueryOperator(
+    upload_to_bq_task = GCSToBigQueryOperator(
         gcp_conn_id='bigquery_connection',
-        task_id='upload_to_bigquery',
+        task_id='upload_to_bq',
         bucket=BUCKET_NAME,
         source_objects=['raw/data.parquet'],
         destination_project_dataset_table='training_dataset.yellow_tripdata_2022_01',
         source_format='PARQUET',
     )
 
-    ingest_data_task >> upload_to_gcs_task >> create_empty_table_task >> upload_to_bigquery_task
+    extract_data_task >> upload_to_gcs_task >> create_table_task >> upload_to_bq_task
