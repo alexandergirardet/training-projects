@@ -3,7 +3,7 @@ This project makes use of 3 tools and technologies. Terraform, Airflow, and Dock
 
 ![alt text](https://github.com/alexandergirardet/training-projects/blob/main/airflow/images/airflow_practice_project.drawio.png)
 <p align="center">
-  <img width="460" height="300" src="http://www.fillmurray.com/460/300](https://github.com/alexandergirardet/training-projects/blob/main/airflow/images/airflow_practice_project.drawio.png)">
+  <img width="460" height="300" src="https://github.com/alexandergirardet/training-projects/blob/main/airflow/images/airflow_practice_project.drawio.png">
 </p>
 
 Docker:
