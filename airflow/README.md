@@ -1,7 +1,7 @@
 This project makes use of 3 tools and technologies. Terraform, Airflow, and Docker. The purpose of this project is to create an orchestrated pipeline that will extract data from the web, stage it, process and transform it in a Google Cloud Storage bucket, and then upload it to BigQuery for analysis. Reliability, scalability and maintainability are the primary design concerns when creating data piplines. Using Terraform as our cloud infrastructure as code solution ensures that our cloud configurations can benefit from version control, and [ Insert more information here about terraform ]. Airflow enables us to handle task dependencies in a scalable fashion making use of Dags, an example of it's usefulness in this project is the creation of a BigQuery table prior to loading the data into it. Docker provides us with an isolated environment where we can manage our environment variables such as google cloud credentials, and handles dependencies for airflow as well as provides an internal network for the webserver, postgres database and scheduler to communicate. 
 
 <p align="center">
-  <img width="600" height="400" src="https://github.com/alexandergirardet/training-projects/blob/main/airflow/images/airflow_practice_project.drawio.png">
+  <img width="800" height="400" src="https://github.com/alexandergirardet/training-projects/blob/main/airflow/images/airflow_practice_project.drawio.png">
 </p>
 
 Docker:
