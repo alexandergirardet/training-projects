@@ -8,11 +8,15 @@ from airflow.operators.bash import BashOperator
 
 from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateEmptyTableOperator
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
+from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+from airflow.operators.python import BranchPythonOperator
+
 
 from airflow.models import Variable
 
 
-BUCKET_NAME = Variable.get("GCP_GCS_BUCKET")
+BUCKET_NAME = os.environ.get("GCP_GCS_BUCKET")
+PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 
 file_url = 'https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2022-01.parquet'
 output_url = "/tmp/yellow_tripdata_2022-01.parquet"
@@ -27,6 +31,16 @@ def upload_to_gcs(output_url):
     blob.upload_from_filename(output_url)
 
     print("Upload to GCS done")
+
+def check_table_exists_in_bq(project_id, dataset_name, table_name):
+    # Create a BigQueryHook object
+    hook = BigQueryHook(gcp_conn_id='bigquery_connection')
+
+    # Check if the table exists
+    if hook.table_exists(project_id, dataset_name, table_name):
+        return "no_table"
+    else:
+        return "create_table"
 
 local_dag = DAG(
     dag_id='web_to_bigquery',
@@ -49,6 +63,16 @@ with local_dag:
         op_kwargs={'output_url': output_url}
     )
 
+    check_table_exists_in_bq_task = BranchPythonOperator(
+        task_id='check_table_exists_in_bq',
+        python_callable=check_table_exists_in_bq,
+        op_kwargs={
+            'project_id': PROJECT_ID,
+            'dataset_name': 'training_dataset',
+            'table_name': 'yellow_tripdata_2022_01'
+        }
+    )
+
     create_table_task = BigQueryCreateEmptyTableOperator(
         gcp_conn_id='bigquery_connection',
         task_id='create_table',
@@ -65,4 +89,9 @@ with local_dag:
         source_format='PARQUET',
     )
 
-    extract_data_task >> upload_to_gcs_task >> create_table_task >> upload_to_bq_task
+    no_table_task = BashOperator(
+        task_id='no_table',
+        bash_command='echo "No table"'
+    )
+
+    extract_data_task >> upload_to_gcs_task >> check_table_exists_in_bq_task >> [create_table_task, no_table_task] >> upload_to_bq_task
